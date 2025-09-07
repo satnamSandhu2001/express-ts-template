@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - '${PORT:-5500}:5500'
+    env_file:
+      - .env
+    environment:
+      - IS_DOCKER=true
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - db
+    # deploy:
+    #   replicas: 2
+    #   resources:
+    #     limits:
+    #       cpus: '1.0'
+    #       memory: 512M
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 256M
+
+  db:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
